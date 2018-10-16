@@ -1,11 +1,36 @@
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { createStackNavigator } from "react-navigation";
+import GroupsScreen from "./GroupsScreen";
+import GroupDetailsScreen from "./GroupDetailsScreen";
 
+const RootNavigator = createStackNavigator(
+  {
+    GroupsScreen: {
+      screen: GroupsScreen
+    },
+    GroupDetailsScreen: {
+      screen: GroupDetailsScreen
+    }
+  },
+  {
+    initialRouteName: "GroupsScreen",
+    navigationOptions: {
+      headerStyle: {
+        backgroundColor: "#006AFF"
+      },
+      headerTintColor: "#fff",
+      headerTitleStyle: {
+        fontWeight: "bold",
+        textAlign: "center" //?
+      }
+    }
+  }
+);
 
 export default class App extends React.Component {
   render() {
-    return <Text />;
+    return <RootNavigator />;
   }
 }
 
