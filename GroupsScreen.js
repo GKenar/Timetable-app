@@ -37,7 +37,7 @@ const groupsData = {
 <Text style={{ fontSize: 24, textAlign: "center", margin: 5 }}>Список групп:</Text>
 */
 
-export default class HomeScreen extends React.Component {
+export default class GroupsScreen extends React.Component {
   static navigationOptions = {
     title: "Список групп"
   };

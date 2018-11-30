@@ -31,6 +31,7 @@ const RootNavigator = createStackNavigator(
 
 export default class App extends React.Component {
   render() {
+    //return <RootNavigator />;
     return <LoginScreen />;
   }
 }

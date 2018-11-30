@@ -25,17 +25,21 @@ export default class LoginScreen extends React.Component {
           }
         />
         <View style={styles.loginForm}>
-          <Text h3 style={{ marginBottom: 30 }}>Timetable App</Text>
+          <Text h3 style={{ marginBottom: 30 }}>
+            Timetable App
+          </Text>
           <Input
             placeholder="Name"
             shake={true}
             leftIcon={<Icon name="user" type={"simple-line-icon"} size={32} />}
+            onChangeText={(text) => this.setState({ userName: text })}
           />
           <Input
             placeholder="Password"
             shake={true}
             inputContainerStyle={{ marginBottom: 30 }}
             leftIcon={<Icon name="lock" type={"simple-line-icon"} size={32} />}
+            onChangeText={(text) => this.setState({ userPassword: text })}
           />
           <Button
             title="Sign in"
@@ -44,15 +48,15 @@ export default class LoginScreen extends React.Component {
               backgroundColor: "rgba(92, 99,216, 1)",
               width: 300,
               height: 45,
-              borderColor: "transparent",
               borderWidth: 0,
               borderRadius: 5
             }}
             containerStyle={{ marginTop: 20 }}
+            onPress={() => { console.log(`${this.state.userName}; ${this.state.userPassword}`) }}
           />
         </View>
         <View style={styles.oauthForm}>
-          <Text h4>or login with...</Text>
+          <Text h4>or sign in with:</Text>
           <View flexDirection="row">
             <SocialIcon
               type="facebook"
