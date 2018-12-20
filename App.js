@@ -4,6 +4,7 @@ import { createStackNavigator } from "react-navigation";
 import GroupsScreen from "./GroupsScreen";
 import GroupDetailsScreen from "./GroupDetailsScreen";
 import LoginScreen from "./LoginScreen";
+import Notifier from "./Notifier";
 
 const RootNavigator = createStackNavigator(
   {
@@ -32,7 +33,8 @@ const RootNavigator = createStackNavigator(
 export default class App extends React.Component {
   render() {
     //return <RootNavigator />;
-    return <LoginScreen />;
+    //return <LoginScreen />;
+    return <Notifier />;
   }
 }
 
