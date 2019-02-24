@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { createStackNavigator } from "react-navigation";
 import GroupsScreen from "./GroupsScreen";
 import GroupDetailsScreen from "./GroupDetailsScreen";
+import EventsScreen from "./EventsScreen";
 import LoginScreen from "./LoginScreen";
 import Notifier from "./Notifier";
 
@@ -34,7 +35,8 @@ export default class App extends React.Component {
   render() {
     //return <RootNavigator />;
     //return <LoginScreen />;
-    return <Notifier />;
+    //return <Notifier />;
+    return <EventsScreen />;
   }
 }
 
