@@ -1,10 +1,62 @@
 import React from "react";
 import { StyleSheet, View } from "react-native";
-import { Input, Header, Text, Button, SocialIcon } from "react-native-elements";
+import {
+  Input,
+  Header,
+  Text,
+  Button,
+  SocialIcon,
+  Divider
+} from "react-native-elements";
 import { Agenda } from "react-native-calendars";
 import ApolloClient from "apollo-boost";
 import { ApolloProvider, Query, ApolloConsumer, Mutation } from "react-apollo";
 import gql from "graphql-tag";
+import lodash from "lodash";
+
+const events = [
+  {
+    __typename: "EVENT",
+    id: 1,
+    name: "Название события",
+    body:
+      "Тестовое сообщение о событии, которое будет проходить где-то в такое-то время!",
+    date: dateToYMD(new Date()),
+    timeStart: "10:00",
+    timeEnd: "13:00",
+    hash: 1
+  },
+  {
+    __typename: "EVENT",
+    id: 2,
+    name: "TestName2",
+    body: "TestBody2",
+    date: "2019-02-28",
+    timeStart: "10:00",
+    timeEnd: "13:00",
+    hash: 1
+  },
+  {
+    __typename: "EVENT",
+    id: 3,
+    name: "TestName3",
+    body: "TestBody3",
+    date: "2019-03-05",
+    timeStart: "10:00",
+    timeEnd: "13:00",
+    hash: 1
+  },
+  {
+    __typename: "EVENT",
+    id: 4,
+    name: "TestName4",
+    body: "TestBody4",
+    date: "2019-04-01",
+    timeStart: "10:00",
+    timeEnd: "13:00",
+    hash: 1
+  }
+];
 
 const client = new ApolloClient({
   uri: "https://48p1r2roz4.sse.codesandbox.io",
@@ -22,60 +74,18 @@ const client = new ApolloClient({
     // },
     resolvers: {
       Query: {
-        getEventsByDate: (_, { date }, { cache }) => {
-          const events = [
-            {
-              __typename: "EVENT",
-              id: 1,
-              name: "TestName1",
-              body: "TestBody1",
-              date: dateToYMD(new Date())
-            },
-            {
-              __typename: "EVENT",
-              id: 2,
-              name: "TestName2",
-              body: "TestBody2",
-              date: "2019-02-20"
-            },
-            {
-              __typename: "EVENT",
-              id: 3,
-              name: "TestName3",
-              body: "TestBody3",
-              date: "2019-03-05"
-            },
-            {
-              __typename: "EVENT",
-              id: 4,
-              name: "TestName4",
-              body: "TestBody4",
-              date: "2019-03-10"
-            }
-          ];
-
+        getEventsByDate: async (_, { date }, { cache }) => {
           const filteredEvents = events.filter(el => {
             const elemDate = el.date.split("-");
             const askingDate = date.split("-");
-
-            // console.log(
-            //   elemDate[0] +
-            //     ", " +
-            //     askingDate[0] +
-            //     ", " +
-            //     elemDate[1] +
-            //     ", " +
-            //     askingDate[1] +
-            //     ", " +
-            //     elemDate[2] +
-            //     ", " +
-            //     askingDate[2]
-            // );
 
             return (
               elemDate[0] === askingDate[0] && elemDate[1] === askingDate[1]
             );
           });
+
+          await new Promise(r => setTimeout(r, 1200));
+
           return filteredEvents;
         }
       },
@@ -95,6 +105,9 @@ const GET_EVENTS = gql`
       name
       body
       date
+      timeStart
+      timeEnd
+      hash
     }
   }
 `;
@@ -106,61 +119,20 @@ const GET_EVENTS_BY_DATE = gql`
       name
       body
       date
+      timeStart
+      timeEnd
+      hash
     }
   }
 `;
 
 function dateToYMD(date) {
-  return date.toISOString().split("T")[0]; //?
-}
-
-function renderEmptyDate() {
-  return (
-    <View style={styles.emptyDate}>
-      <Text h4 style={{ textAlign: "center" }}>
-        No events
-      </Text>
-    </View>
-  );
-}
-
-function rowHasChanged(r1, r2) {
-  return r1.id !== r2.id;
-}
-
-const renderItem = function(item) {
-  return (
-    <View style={styles.item}>
-      <Text h4 style={{ textAlign: "center" }}>
-        {item.name}
-      </Text>
-      <Text h5>{item.body}</Text>
-    </View>
-  );
-};
-
-function arrayToObject(arr) {
-  if (arr == null) return null;
-
-  var obj = {};
-  arr.forEach(element => {
-    obj[element.date] = [element];
-  });
-
-  return obj;
-}
-
-function loadItems(month) {
-  console.log(month);
+  return date.toISOString().split("T")[0];
 }
 
 class AgendaComponent extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      items: null
-    };
 
     this.currentDate = dateToYMD(new Date());
   }
@@ -169,94 +141,120 @@ class AgendaComponent extends React.Component {
     return (
       <Query
         query={GET_EVENTS_BY_DATE}
-        variables={{ date: this.currentDate.substring(0, 7) }}
+        variables={{ date: this.currentDate }}
+        notifyOnNetworkStatusChange
       >
-        {({ data, loading, error, refetch, fetchMore, cache }) => {
-          if (error) return <Text>Error</Text>;
-          if (loading) return <Text>Loading</Text>;
+        {({ data, error, refetch, fetchMore, networkStatus }) => {
+          if (error)
+            return (
+              <View>
+                <Text>Error</Text>
+              </View>
+            );
 
-          //console.log(arrayToObject(data.getEventsByDate));
+          const events = this.arrayToObject(data.getEventsByDate);
 
           return (
             <Agenda
-              items={arrayToObject(data.getEventsByDate)}
-              onDayPress={day => {
-                this.currentDate = day.dateString;
-                //refetch({ variables: { date: day } });
-                fetchMore({
-                  variables: { date: this.currentDate.substring(0, 7) },
-                  updateQuery: (prev, { fetchMoreResult }) => {
-                    // const combination = {
-                    //   getEventsByDate: [
-                    //     ...prev.getEventsByDate,
-                    //     ...fetchMoreResult.getEventsByDate
-                    //   ]
-                    // };
-                    if (!fetchMoreResult) return prev;
-                    const combination = Object.assign({}, prev, {
-                      getEventsByDate: [
-                        ...prev.getEventsByDate,
-                        ...fetchMoreResult.getEventsByDate
-                      ]
-                    });
-                    console.log(combination);
-                    return combination;
-                    //return combination;
-                  }
-                });
-                console.log(
-                  "cache: " +
-                    client.cache.readQuery({
-                      query: GET_EVENTS_BY_DATE,
-                      variables: { date: this.currentDate.substring(0, 7) }
-                    })
-                );
+              items={events}
+              onDayPress={date => {
+                this.currentDate = date.dateString;
               }}
               loadItemsForMonth={month => {
-                //this.currentDate = month.dateString;
-                //refetch({ variables: { date: this.currentDate } });
-                // fetchMore({
-                //   variables: { date: this.currentDate },
-                //   updateQuery: (prev, { fetchMoreResult }) => {
-                //     const combination = {
-                //       getEventsByDate: [
-                //         ...prev.getEventsByDate,
-                //         ...fetchMoreResult.getEventsByDate
-                //       ]
-                //     };
-                //     console.log(fetchMoreResult);
-                //     return combination;
-                //     // if (!fetchMoreResult) return prev;
-                //     // return Object.assign({}, prev, {
-                //     //   getEventsByDate: [
-                //     //     ...prev.getEventsByDate,
-                //     //     ...fetchMoreResult.getEventsByDate
-                //     //   ]
-                //     // });
-                //   }
-                // });
+                fetchMore({
+                  variables: { date: month.dateString },
+                  updateQuery: (prev, { fetchMoreResult }) => {
+                    if (!fetchMoreResult) return prev;
+
+                    const combination = {
+                      getEventsByDate: lodash.unionBy(
+                        prev.getEventsByDate,
+                        fetchMoreResult.getEventsByDate,
+                        x => x.id
+                      )
+                    };
+
+                    return combination;
+                  }
+                });
               }}
+              //onDayChange={(day)=>{console.log('day changed')}}
               selected={this.currentDate}
-              renderItem={renderItem}
-              renderEmptyDate={renderEmptyDate}
-              rowHasChanged={rowHasChanged}
+              renderItem={this.renderItem}
+              renderEmptyDate={this.renderEmptyDate}
+              rowHasChanged={this.rowHasChanged}
               pastScrollRange={5}
-              futureScrollRange={3}
+              futureScrollRange={5}
+              onRefresh={() => {
+                refetch({ date: this.currentDate });
+              }}
+              refreshing={networkStatus === 4}
+              //refreshControl={null}
             />
           );
         }}
       </Query>
     );
   }
+
+  renderEmptyDate() {
+    return (
+      <View style={styles.emptyDate}>
+        {/* <Text h4 style={{ textAlign: "center" }}>
+          No events
+        </Text> */}
+      </View>
+    );
+  }
+
+  rowHasChanged(r1, r2) {
+    return r1.id + r1.hash !== r2.id + r2.hash;
+  }
+
+  renderItem(item) {
+    return (
+      <View style={styles.item}>
+        <Text style={{ textAlign: "left", fontSize: 20 }}>{`${
+          item.timeStart
+        } - ${item.timeEnd}`}</Text>
+        <Text
+          style={{
+            textAlign: "left",
+            fontSize: 22,
+            fontWeight: "bold",
+            marginTop: 5,
+            marginBottom: 5
+          }}
+        >
+          {item.name}
+        </Text>
+        <Text style={{ textAlign: "left", fontSize: 20, color: "#505064" }}>
+          {item.body}
+        </Text>
+      </View>
+    );
+  }
+
+  loadItems(month) {
+    console.log(month);
+  }
+
+  arrayToObject(arr) {
+    if (arr == null) return null;
+
+    var obj = {};
+    arr.forEach(element => {
+      if (!obj[element.date]) obj[element.date] = [element];
+      else obj[element.date].push(element);
+    });
+
+    return obj;
+  }
 }
 
 export default class EventsScreen extends React.Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      items: {}
-    };
   }
 
   static navigationOptions = {
@@ -267,6 +265,34 @@ export default class EventsScreen extends React.Component {
     return (
       <ApolloProvider client={client}>
         <AgendaComponent />
+        <Button
+          title="Add event"
+          onPress={() => {
+            events.push({
+              __typename: "EVENT",
+              id: events.length + 5,
+              name: "TestName" + (events.length + 5),
+              body: "TestBody" + (events.length + 5),
+              date: dateToYMD(new Date()),
+              timeStart: "10:00",
+              timeEnd: "13:00",
+              hash: 1
+            });
+          }}
+        />
+        <Button
+          title="Shift event"
+          onPress={() => {
+            events.shift();
+          }}
+        />
+        <Button
+          title="change hash and text event[0]"
+          onPress={() => {
+            events[0].hash = Math.round(Math.random() * 10000);
+            events[0].body = "TestBody" + Math.random();
+          }}
+        />
       </ApolloProvider>
     );
   }

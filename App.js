@@ -6,6 +6,7 @@ import GroupDetailsScreen from "./GroupDetailsScreen";
 import EventsScreen from "./EventsScreen";
 import LoginScreen from "./LoginScreen";
 import Notifier from "./Notifier";
+import OptionsScreen from "./OptionsScreen";
 
 const RootNavigator = createStackNavigator(
   {
@@ -37,6 +38,7 @@ export default class App extends React.Component {
     //return <LoginScreen />;
     //return <Notifier />;
     return <EventsScreen />;
+    //return <OptionsScreen/>;
   }
 }
 
